@@ -1,5 +1,7 @@
 import { CreateProductInput } from './create-product.input';
-import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
+import { InputType, Field, Int, PartialType, OmitType } from '@nestjs/graphql';
 
-@InputType('UpdateUserInput')
-export class UpdateProductInput extends PartialType(CreateProductInput) {}
+@InputType('UpdateProductInput')
+export class UpdateProductInput extends OmitType(PartialType(CreateProductInput), [
+    'currentStock',
+]) {}

@@ -30,15 +30,15 @@ export class ProductResolver {
   }
 
   @Mutation(() => ProductDTO)
-  updateProduct(
+  async updateProduct(
     @Args('id') id: string,
-    @Args('updateProductInput') updateProductInput: UpdateProductInput
+    @Args('data') data: UpdateProductInput
   ) {
-    return this.productService.update(id, updateProductInput);
+    return await this.productService.update(id, data);
   }
 
   @Mutation(() => ProductDTO)
-  removeProduct(@Args('id', { type: () => Int }) id: number) {
-    return this.productService.remove(id);
+  async removeProduct(@Args('id') id: string) {
+    return await this.productService.remove(id);
   }
 }

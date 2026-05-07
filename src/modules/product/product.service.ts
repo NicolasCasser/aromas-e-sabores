@@ -41,11 +41,24 @@ export class ProductService {
     return product;
   }
 
-  update(id: string, updateProductInput: UpdateProductInput) {
-    return `This action updates a #${id} product`;
+  async update(id: string, data: UpdateProductInput): Promise<Product> {
+    const product = await this.repository.findOneBy({ id });
+
+    if (!product) {
+      throw new NotFoundException(`Produto com id ${id} não encontrado.`);
+    }
+
+    Object.assign(product, data);
+    return this.repository.save(product);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string): Promise<Product> {
+    const product = await this.repository.findOneBy({ id });
+
+    if (!product) {
+      throw new NotFoundException(`Produto com id ${id} não encontrado.`);
+    }
+
+    return await this.repository.softRemove(product);
   }
 }

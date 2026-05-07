@@ -27,8 +27,8 @@ type Query {
 
 type Mutation {
   createProduct(data: CreateProductInput!): Product!
-  updateProduct(id: String!, updateProductInput: UpdateUserInput!): Product!
-  removeProduct(id: Int!): Product!
+  updateProduct(id: String!, data: UpdateProductInput!): Product!
+  removeProduct(id: String!): Product!
 }
 
 input CreateProductInput {
@@ -45,10 +45,9 @@ enum UnitType {
   UN
 }
 
-input UpdateUserInput {
+input UpdateProductInput {
   name: String
   barcode: String
   unitType: UnitType
   price: Int
-  currentStock: Int
 }
