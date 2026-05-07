@@ -6,6 +6,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { AppDataSource } from './database/data-source';
+import { ProductModule } from './modules/product/product.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { AppDataSource } from './database/data-source';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-    })
+    }),
+    ProductModule
   ],
   controllers: [AppController],
   providers: [AppService],
