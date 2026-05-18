@@ -10,7 +10,7 @@ export class ProductDTO extends BaseDTO {
     @Field({ nullable: true })
     barcode?: string;
 
-    @Field()
+    @Field(() => UnitType)
     unitType!: UnitType;
 
     @Field()

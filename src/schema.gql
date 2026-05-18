@@ -9,7 +9,7 @@ type Product {
   deletedAt: DateTime
   name: String!
   barcode: String
-  unitType: String!
+  unitType: UnitType!
   price: Float!
   currentStock: Float!
 }
@@ -19,16 +19,42 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+"""Define os padrões de unidades dos produtos: kg (kilos) ou un (unidade)"""
+enum UnitType {
+  KG
+  UN
+}
+
+type StockTransaction {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime
+  deletedAt: DateTime
+  type: TransactionType!
+  quantity: Int!
+  description: String
+  productId: String!
+}
+
+"""Tipos de movimentação de estoque (Entrada, Saída, Perda)"""
+enum TransactionType {
+  IN
+  OUT
+  LOSS
+}
+
 type Query {
   findAll: [Product!]!
   findById(id: String!): Product!
   findByBarcode(barcode: String!): Product!
+  stockExtractByProduct(id: String!): [StockTransaction!]!
 }
 
 type Mutation {
   createProduct(data: CreateProductInput!): Product!
   updateProduct(id: String!, data: UpdateProductInput!): Product!
   removeProduct(id: String!): Product!
+  createStockTransaction(data: CreateStockTransactionInput!): StockTransaction!
 }
 
 input CreateProductInput {
@@ -39,15 +65,16 @@ input CreateProductInput {
   currentStock: Int!
 }
 
-"""Define os padrões de unidades dos produtos: kg (kilos) ou un (unidade)"""
-enum UnitType {
-  KG
-  UN
-}
-
 input UpdateProductInput {
   name: String
   barcode: String
   unitType: UnitType
   price: Int
+}
+
+input CreateStockTransactionInput {
+  type: TransactionType!
+  quantity: Int!
+  description: String
+  productId: String!
 }

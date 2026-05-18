@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { AppDataSource } from './database/data-source';
 import { ProductModule } from './modules/product/product.module';
+import { StockTransactionModule } from './modules/stock-transaction/stock-transaction.module';
 
 @Module({
   imports: [
@@ -17,9 +16,8 @@ import { ProductModule } from './modules/product/product.module';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
-    ProductModule
+    ProductModule,
+    StockTransactionModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +13,15 @@ export class ProductService {
   ) {}
 
   async create(data: CreateProductInput): Promise<Product> {
+    // Garante que o código de barras é único
+    if (data.barcode) {
+      const existingProduct = await this.repository.findOneBy({ barcode: data.barcode});
+
+      if (existingProduct) {
+        throw new ConflictException(`O código de barras ${data.barcode} já está cadastrado em outro produto.`);
+      }
+    }
+    
     const product = this.repository.create(data);
     return await this.repository.save(product);
   }
