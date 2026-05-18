@@ -1,0 +1,38 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Lint & Test
+    runs-on: ubuntu-latest # máquina virtual do GitHub que vai rodar o código
+
+    steps:
+      # Faz o download do código para a máquina virtual
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      # Prepara o Node.js na versão exata está sendo utilizada localmente
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24' 
+          cache: 'npm' # deixa as próximas execuções mais rápidas
+
+      # Instala as dependências usando o package-lock.json para garantir as versões exatas
+      - name: Instalar Dependências
+        run: npm ci
+
+      # Roda o ESLint para garantir que não há erros de sintaxe, formatação ou importações não usadas
+      - name: Rodar Linting (ESLint)
+        run: npm run lint
+
+      # roda a suíte de testes unitários
+      - name: Rodar Testes (Jest)
+        run: npm run test
