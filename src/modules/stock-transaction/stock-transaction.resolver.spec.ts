@@ -55,7 +55,7 @@ describe('StockTransactionResolver', () => {
       mockStockTransactionService.create.mockResolvedValue(mockTransaction);
 
       // Act
-      const result = await resolver.create(input);
+      const result = await resolver.createStockTransaction(input);
 
       // Assert
       expect(mockStockTransactionService.create).toHaveBeenCalledWith(input);
@@ -74,7 +74,7 @@ describe('StockTransactionResolver', () => {
       mockStockTransactionService.create.mockRejectedValue(new NotFoundException('Produto com id 12345 não encontrado'));
 
       // Assert
-      await expect(resolver.create(input)).rejects.toThrow(NotFoundException);
+      await expect(resolver.createStockTransaction(input)).rejects.toThrow(NotFoundException);
       expect(mockStockTransactionService.create).toHaveBeenCalledTimes(1);
       expect(mockStockTransactionService.create).toHaveBeenCalledWith(input);
     });
@@ -90,7 +90,7 @@ describe('StockTransactionResolver', () => {
       mockStockTransactionService.create.mockRejectedValue(new BadRequestException('Estoque insuficiente.'));
 
       // Assert
-      await expect(resolver.create(input)).rejects.toThrow(BadRequestException);
+      await expect(resolver.createStockTransaction(input)).rejects.toThrow(BadRequestException);
       expect(mockStockTransactionService.create).toHaveBeenCalledTimes(1);
       expect(mockStockTransactionService.create).toHaveBeenCalledWith(input);
     });
