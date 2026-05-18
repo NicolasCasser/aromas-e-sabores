@@ -1,6 +1,7 @@
 import { BaseEntity } from 'src/modules/bases/entities/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { UnitType } from '../enum/unit-type.enum';
+import { StockTransaction } from 'src/modules/stock-transaction/entities/stock-transaction.entity';
 
 @Entity('products')
 export class Product extends BaseEntity {
@@ -18,4 +19,8 @@ export class Product extends BaseEntity {
 
   @Column({ name: 'current_stock', type: 'int', nullable: false })
   currentStock!: number;
+
+  // Um Produto tem Várias Transações
+  @OneToMany(() => StockTransaction, (transaction) => transaction.product)
+  stockTransactions!: StockTransaction[];
 }
