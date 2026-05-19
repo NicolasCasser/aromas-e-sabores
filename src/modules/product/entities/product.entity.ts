@@ -11,7 +11,12 @@ export class Product extends BaseEntity {
   @Column({ type: 'varchar', length: 50, nullable: true, unique: true })
   barcode?: string;
 
-  @Column({ name: 'unit_type', type: 'simple-enum', enum: UnitType, nullable: false})
+  @Column({
+    name: 'unit_type',
+    type: 'simple-enum',
+    enum: UnitType,
+    nullable: false,
+  })
   unitType!: UnitType;
 
   @Column({ type: 'int', nullable: false })

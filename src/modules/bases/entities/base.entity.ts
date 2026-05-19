@@ -4,7 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 
 @InterfaceType()

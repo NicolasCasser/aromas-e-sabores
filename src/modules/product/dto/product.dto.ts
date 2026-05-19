@@ -1,21 +1,21 @@
-import { Field, ObjectType } from "@nestjs/graphql";
-import { BaseDTO } from "src/modules/bases/dto/base.dto";
-import { UnitType } from "../enum/unit-type.enum";
+import { Field, ObjectType } from '@nestjs/graphql';
+import { BaseDTO } from 'src/modules/bases/dto/base.dto';
+import { UnitType } from '../enum/unit-type.enum';
 
 @ObjectType('Product')
 export class ProductDTO extends BaseDTO {
-    @Field()
-    name!: string;
+  @Field()
+  name!: string;
 
-    @Field({ nullable: true })
-    barcode?: string;
+  @Field({ nullable: true })
+  barcode?: string;
 
-    @Field(() => UnitType)
-    unitType!: UnitType;
+  @Field(() => UnitType)
+  unitType!: UnitType;
 
-    @Field()
-    price!: number;
+  @Field()
+  price!: number;
 
-    @Field()
-    currentStock!: number;
+  @Field()
+  currentStock!: number;
 }

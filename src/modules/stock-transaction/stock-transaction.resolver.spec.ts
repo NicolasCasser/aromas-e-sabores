@@ -10,10 +10,10 @@ import { StockTransactionDTO } from './dto/stock-transaction.dto';
 
 describe('StockTransactionResolver', () => {
   let resolver: StockTransactionResolver;
-  
+
   const mockStockTransactionService = {
     create: jest.fn() as jest.Mock<any>,
-    extractByProduct: jest.fn() as jest.Mock<any>, 
+    extractByProduct: jest.fn() as jest.Mock<any>,
   };
 
   beforeEach(async () => {
@@ -71,10 +71,14 @@ describe('StockTransactionResolver', () => {
         productId: '12345',
       } as CreateStockTransactionInput;
 
-      mockStockTransactionService.create.mockRejectedValue(new NotFoundException('Produto com id 12345 não encontrado'));
+      mockStockTransactionService.create.mockRejectedValue(
+        new NotFoundException('Produto com id 12345 não encontrado'),
+      );
 
       // Assert
-      await expect(resolver.createStockTransaction(input)).rejects.toThrow(NotFoundException);
+      await expect(resolver.createStockTransaction(input)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockStockTransactionService.create).toHaveBeenCalledTimes(1);
       expect(mockStockTransactionService.create).toHaveBeenCalledWith(input);
     });
@@ -87,10 +91,14 @@ describe('StockTransactionResolver', () => {
         productId: '12345',
       } as CreateStockTransactionInput;
 
-      mockStockTransactionService.create.mockRejectedValue(new BadRequestException('Estoque insuficiente.'));
+      mockStockTransactionService.create.mockRejectedValue(
+        new BadRequestException('Estoque insuficiente.'),
+      );
 
       // Assert
-      await expect(resolver.createStockTransaction(input)).rejects.toThrow(BadRequestException);
+      await expect(resolver.createStockTransaction(input)).rejects.toThrow(
+        BadRequestException,
+      );
       expect(mockStockTransactionService.create).toHaveBeenCalledTimes(1);
       expect(mockStockTransactionService.create).toHaveBeenCalledWith(input);
     });
@@ -99,7 +107,7 @@ describe('StockTransactionResolver', () => {
   describe('stockExtractByProduct', () => {
     it('deve retornar o extrato de transações de um produto com sucesso', async () => {
       // Arrange
-      const productId = '12345';  
+      const productId = '12345';
       // Array simulando a lista que o banco retornaria
       const mockTransactions = [
         {
@@ -115,30 +123,44 @@ describe('StockTransactionResolver', () => {
           quantity: 2,
           productId: productId,
           createdAt: new Date('2026-05-18T11:00:00Z'),
-        } 
+        },
       ] as StockTransactionDTO[];
 
-      mockStockTransactionService.extractByProduct.mockResolvedValue(mockTransactions);
+      mockStockTransactionService.extractByProduct.mockResolvedValue(
+        mockTransactions,
+      );
 
       // Act
       const result = await resolver.stockExtractByProduct(productId);
-      
+
       // Assert
-      expect(mockStockTransactionService.extractByProduct).toHaveBeenCalledTimes(1);
-      expect(mockStockTransactionService.extractByProduct).toHaveBeenCalledWith(productId);
-      expect(result).toEqual(mockTransactions); 
+      expect(
+        mockStockTransactionService.extractByProduct,
+      ).toHaveBeenCalledTimes(1);
+      expect(mockStockTransactionService.extractByProduct).toHaveBeenCalledWith(
+        productId,
+      );
+      expect(result).toEqual(mockTransactions);
     });
 
     it('deve retornar NotFoundException quando o ID do produto não for encontrado', async () => {
       // Arrange
       const productId = 'id-inexistente';
 
-      mockStockTransactionService.extractByProduct.mockRejectedValue(new NotFoundException());
+      mockStockTransactionService.extractByProduct.mockRejectedValue(
+        new NotFoundException(),
+      );
 
       // Assert
-      await expect(resolver.stockExtractByProduct(productId)).rejects.toThrow(NotFoundException);
-      expect(mockStockTransactionService.extractByProduct).toHaveBeenCalledTimes(1);
-      expect(mockStockTransactionService.extractByProduct).toHaveBeenCalledWith(productId);
+      await expect(resolver.stockExtractByProduct(productId)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(
+        mockStockTransactionService.extractByProduct,
+      ).toHaveBeenCalledTimes(1);
+      expect(mockStockTransactionService.extractByProduct).toHaveBeenCalledWith(
+        productId,
+      );
     });
   });
 });

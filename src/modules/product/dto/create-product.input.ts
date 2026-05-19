@@ -1,6 +1,13 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
 import { UnitType } from '../enum/unit-type.enum';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 @InputType('CreateProductInput')
 export class CreateProductInput {
@@ -18,7 +25,7 @@ export class CreateProductInput {
   @IsEnum(UnitType)
   @IsNotEmpty({ message: 'O tipo do produto é obrigatório.' })
   unitType!: UnitType;
-  
+
   @Field(() => Int)
   @IsInt({ message: 'O preço deve ser um número inteiro' })
   @IsNotEmpty({ message: 'O preço do produto é obrigatório.' })

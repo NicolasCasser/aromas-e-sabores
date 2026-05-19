@@ -6,12 +6,7 @@ import { StockTransaction } from './entities/stock-transaction.entity';
 import { Product } from '../product/entities/product.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      StockTransaction,
-      Product,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([StockTransaction, Product])],
   providers: [StockTransactionResolver, StockTransactionService],
 })
 export class StockTransactionModule {}

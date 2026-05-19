@@ -17,7 +17,7 @@ import { StockTransactionModule } from './modules/stock-transaction/stock-transa
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
     ProductModule,
-    StockTransactionModule
+    StockTransactionModule,
   ],
 })
 export class AppModule {}

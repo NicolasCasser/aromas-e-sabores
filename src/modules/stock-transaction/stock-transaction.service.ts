@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateStockTransactionInput } from './dto/create-stock-transaction.input';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StockTransaction } from './entities/stock-transaction.entity';
@@ -21,11 +25,13 @@ export class StockTransactionService {
     // Evita que o currentStock de um produto seja alterado sem a stockTransaction ser criada em caso de queda do servidor
     return await this.dataSource.transaction(async (manager) => {
       const product = await manager.findOneBy(Product, { id: data.productId });
-  
+
       if (!product) {
-        throw new NotFoundException(`Produto com id ${data.productId} não encontrado`);
+        throw new NotFoundException(
+          `Produto com id ${data.productId} não encontrado`,
+        );
       }
-  
+
       if (data.type === TransactionType.IN) {
         product.currentStock += data.quantity;
       } else {
@@ -49,11 +55,11 @@ export class StockTransactionService {
 
     if (!product) {
       throw new NotFoundException(`Produto com id ${id} não encontrado`);
-    };
+    }
 
     return await this.repository.find({
       where: { productId: id }, // Filtra apenas as transações do produto solicitado
       order: { createdAt: 'DESC' }, // Ordena da data mais recente para a mais antiga
     });
-  };
+  }
 }

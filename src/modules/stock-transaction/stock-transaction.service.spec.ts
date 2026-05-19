@@ -20,7 +20,11 @@ describe('StockTransactionService', () => {
 
   // Falso DataSource que apenas executa o que tem dentro da transação passando o mockManager
   const mockDataSource = {
-    transaction: jest.fn().mockImplementation((cb: any) => cb(mockEntityManager)),
+    transaction: jest.fn(
+      async (cb: (manager: typeof mockEntityManager) => Promise<unknown>) => {
+        return cb(mockEntityManager);
+      },
+    ),
   };
 
   beforeEach(async () => {
@@ -30,7 +34,7 @@ describe('StockTransactionService', () => {
         // Injetando as dependências falsas para o Service não tentar conectar no SQLite real
         {
           provide: getRepositoryToken(StockTransaction),
-          useValue: {}
+          useValue: {},
         },
         {
           provide: getRepositoryToken(Product),
@@ -70,7 +74,10 @@ describe('StockTransactionService', () => {
       // Diz para o falso manager que quando ele buscar o produto deve retornar o mockProduct de estoque 10
       mockEntityManager.findOneBy.mockResolvedValue(mockProduct);
       // Finge que o save da transação retorna a própria transação com um ID falso gerado
-      mockEntityManager.save.mockResolvedValue({ id: 'uuid-da-transacao', ...input });
+      mockEntityManager.save.mockResolvedValue({
+        id: 'uuid-da-transacao',
+        ...input,
+      });
 
       // Act
       const result = await service.create(input);
@@ -92,7 +99,7 @@ describe('StockTransactionService', () => {
       const mockProduct = {
         id: 'uuid-do-produto',
         currentStock: 10,
-      } as Product; 
+      } as Product;
 
       const input = {
         productId: 'uuid-do-produto',
@@ -101,7 +108,10 @@ describe('StockTransactionService', () => {
       };
 
       mockEntityManager.findOneBy.mockResolvedValue(mockProduct);
-      mockEntityManager.save.mockResolvedValue({ id: 'uuid-da-transacao', ...input });
+      mockEntityManager.save.mockResolvedValue({
+        id: 'uuid-da-transacao',
+        ...input,
+      });
 
       // Act
       const result = await service.create(input);

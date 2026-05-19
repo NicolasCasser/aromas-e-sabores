@@ -24,7 +24,7 @@ describe('ProductResolver', () => {
         ProductResolver,
         {
           provide: ProductService,
-          useValue: mockProductService, 
+          useValue: mockProductService,
         },
       ],
     }).compile();
@@ -67,15 +67,19 @@ describe('ProductResolver', () => {
       const input = {
         name: 'Produto Duplicado',
         barcode: '12345',
-      } as any; 
+      } as CreateProductInput;
 
       // Erro que o Service vai lançar
-      const error = new ConflictException('O código de barras 12345 já está cadastrado');
-      
+      const error = new ConflictException(
+        'O código de barras 12345 já está cadastrado',
+      );
+
       mockProductService.create.mockRejectedValue(error);
 
-      // Act 
-      await expect(resolver.createProduct(input)).rejects.toThrow(ConflictException);
+      // Act
+      await expect(resolver.createProduct(input)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
@@ -83,13 +87,13 @@ describe('ProductResolver', () => {
     it('deve retornar o produto corretamente quando o ID for passado', async () => {
       // Arrange
       const id = '12345';
-      const mockProduct = { id: '12345', name: 'Produto teste '};
-  
+      const mockProduct = { id: '12345', name: 'Produto teste ' };
+
       mockProductService.findById.mockResolvedValue(mockProduct);
 
       // Act
       const result = await resolver.findById(id);
-      
+
       // Assert
       expect(mockProductService.findById).toHaveBeenCalledWith(id);
       expect(result).toEqual(mockProduct);
@@ -107,10 +111,14 @@ describe('ProductResolver', () => {
     it('deve retornar NotFoundException quando o produto com o código de barras passado não for encontrado', async () => {
       // Arrange
       const barcode = 'barcode-inexistente';
-      mockProductService.findByBarcode.mockRejectedValue(new NotFoundException());
+      mockProductService.findByBarcode.mockRejectedValue(
+        new NotFoundException(),
+      );
 
       // Assert
-      await expect(resolver.findByBarcode(barcode)).rejects.toThrow(NotFoundException);
+      await expect(resolver.findByBarcode(barcode)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -125,8 +133,8 @@ describe('ProductResolver', () => {
 
       mockProductService.findAll.mockResolvedValue(mockProducts);
 
-      // Act 
-      const result = await resolver.findAll()
+      // Act
+      const result = await resolver.findAll();
 
       // Assert
       expect(mockProductService.findAll).toHaveBeenCalled();
@@ -138,9 +146,9 @@ describe('ProductResolver', () => {
     it('deve atualizar o produto corretamente quando um ID correto for passado', async () => {
       // Arrange
       // O que o front-end envia
-      const id = '12345'
+      const id = '12345';
       const input = { name: 'Produto atualizado' };
-      // O que service retornaria após salvar no banco  
+      // O que service retornaria após salvar no banco
       const updatedProduct = { id: '12345', name: 'Produto atualizado' };
 
       // Diz para o mock de service retornar o updateProduct quando o método update for chamado (usando mockResolvedValue porque o Service é async)
@@ -161,7 +169,9 @@ describe('ProductResolver', () => {
       mockProductService.update.mockRejectedValue(new NotFoundException());
 
       // Assert
-      await expect(resolver.updateProduct(id, input)).rejects.toThrow(NotFoundException);
+      await expect(resolver.updateProduct(id, input)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -191,7 +201,9 @@ describe('ProductResolver', () => {
       mockProductService.remove.mockRejectedValue(new NotFoundException());
 
       // Assert
-      await expect(resolver.removeProduct(id)).rejects.toThrow(NotFoundException);
+      await expect(resolver.removeProduct(id)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockProductService.remove).toHaveBeenCalledTimes(1);
     });
   });
