@@ -43,11 +43,17 @@ enum TransactionType {
   LOSS
 }
 
+type Sale {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
 type Query {
   findAll: [Product!]!
   findById(id: String!): Product!
   findByBarcode(barcode: String!): Product!
   stockExtractByProduct(id: String!): [StockTransaction!]!
+  sale(id: Int!): Sale!
 }
 
 type Mutation {
@@ -55,6 +61,9 @@ type Mutation {
   updateProduct(id: String!, data: UpdateProductInput!): Product!
   removeProduct(id: String!): Product!
   createStockTransaction(data: CreateStockTransactionInput!): StockTransaction!
+  createSale(createSaleInput: CreateSaleInput!): Sale!
+  updateSale(updateSaleInput: UpdateSaleInput!): Sale!
+  removeSale(id: Int!): Sale!
 }
 
 input CreateProductInput {
@@ -77,4 +86,15 @@ input CreateStockTransactionInput {
   quantity: Int!
   description: String
   productId: String!
+}
+
+input CreateSaleInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateSaleInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
 }
