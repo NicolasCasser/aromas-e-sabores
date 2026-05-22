@@ -1,7 +1,12 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
+import { PaymentMethod } from '../enum/payment-methods.enum';
+import { CreateSaleItemInput } from './create-sale-item.input';
 
-@InputType()
+@InputType('CreateSaleInput')
 export class CreateSaleInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field(() => PaymentMethod )
+  paymentMethod!: PaymentMethod;
+
+  @Field(() => [CreateSaleItemInput])
+  items!: CreateSaleItemInput[];
 }
