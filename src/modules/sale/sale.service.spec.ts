@@ -12,7 +12,7 @@ import { TransactionType } from '../stock-transaction/enum/transaction-type.enum
 
 describe('SaleService', () => {
   let service: SaleService;
-  
+
   let saleRepository: jest.Mocked<Repository<Sale>>;
   let saleItemRepository: jest.Mocked<Repository<SaleItem>>;
   let productService: jest.Mocked<ProductService>;
@@ -54,7 +54,7 @@ describe('SaleService', () => {
     }).compile();
 
     service = module.get<SaleService>(SaleService);
-    
+
     saleRepository = module.get(getRepositoryToken(Sale));
     saleItemRepository = module.get(getRepositoryToken(SaleItem));
     productService = module.get(ProductService);
@@ -74,7 +74,9 @@ describe('SaleService', () => {
 
       // Act & Assert
       await expect(service.create(input)).rejects.toThrow(BadRequestException);
-      await expect(service.create(input)).rejects.toThrow('A venda precisa ter pelo menos um item');
+      await expect(service.create(input)).rejects.toThrow(
+        'A venda precisa ter pelo menos um item',
+      );
     });
 
     it('deve lançar BadRequestException se a quantidade pedida for maior que o estoque atual', async () => {
@@ -93,7 +95,9 @@ describe('SaleService', () => {
 
       // Act & Assert
       await expect(service.create(input)).rejects.toThrow(BadRequestException);
-      await expect(service.create(input)).rejects.toThrow('Estoque insuficiente para o produto: Milho');
+      await expect(service.create(input)).rejects.toThrow(
+        'Estoque insuficiente para o produto: Milho',
+      );
     });
 
     it('deve criar uma venda com sucesso, salvar os itens e registrar a saída no estoque', async () => {
@@ -103,15 +107,27 @@ describe('SaleService', () => {
         items: [{ productId: 'prod-1', quantity: 2 }],
       };
 
-      const mockProduct = { id: 'prod-1', name: 'Milho', price: 500, currentStock: 10 };
-      const mockSavedSale = { id: 'sale-1', totalAmount: 1000, paymentMethod: PaymentMethod.PIX };
+      const mockProduct = {
+        id: 'prod-1',
+        name: 'Milho',
+        price: 500,
+        currentStock: 10,
+      };
+      const mockSavedSale = {
+        id: 'sale-1',
+        totalAmount: 1000,
+        paymentMethod: PaymentMethod.PIX,
+      };
 
       productService.findById.mockResolvedValue(mockProduct as any);
       saleRepository.create.mockReturnValue(mockSavedSale as any);
       saleRepository.save.mockResolvedValue(mockSavedSale as any);
       saleItemRepository.create.mockReturnValue({} as any);
       saleItemRepository.save.mockResolvedValue({} as any);
-      saleRepository.findOneOrFail.mockResolvedValue({ ...mockSavedSale, saleItens: [] } as any);
+      saleRepository.findOneOrFail.mockResolvedValue({
+        ...mockSavedSale,
+        saleItens: [],
+      } as any);
 
       // Act
       const result = await service.create(input);

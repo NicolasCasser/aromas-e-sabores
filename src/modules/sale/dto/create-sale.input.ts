@@ -4,7 +4,7 @@ import { CreateSaleItemInput } from './create-sale-item.input';
 
 @InputType('CreateSaleInput')
 export class CreateSaleInput {
-  @Field(() => PaymentMethod )
+  @Field(() => PaymentMethod)
   paymentMethod!: PaymentMethod;
 
   @Field(() => [CreateSaleItemInput])

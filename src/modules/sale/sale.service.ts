@@ -16,7 +16,7 @@ export class SaleService {
     private readonly repository: Repository<Sale>,
     @InjectRepository(SaleItem)
     private readonly saleItemRepository: Repository<SaleItem>,
-    
+
     private readonly productService: ProductService,
     private readonly stockTransactionService: StockTransactionService,
   ) {}
@@ -40,7 +40,9 @@ export class SaleService {
 
       // Checa se tem estoque antes de vender
       if (product.currentStock < item.quantity) {
-        throw new BadRequestException(`Estoque insuficiente para o produto: ${product.name}`);
+        throw new BadRequestException(
+          `Estoque insuficiente para o produto: ${product.name}`,
+        );
       }
 
       const subTotal = product.price * item.quantity;

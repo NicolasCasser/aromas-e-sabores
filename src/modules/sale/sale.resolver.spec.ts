@@ -10,7 +10,8 @@ describe('SaleResolver', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [SaleResolver, 
+      providers: [
+        SaleResolver,
         {
           provide: SaleService,
           useValue: {
@@ -93,4 +94,3 @@ describe('SaleResolver', () => {
     });
   });
 });
-
