@@ -43,11 +43,48 @@ enum TransactionType {
   LOSS
 }
 
+type SaleItem {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime
+  deletedAt: DateTime
+  quantity: Int!
+  unitPrice: Int!
+  subTotal: Int!
+  saleId: ID!
+  productId: ID!
+}
+
+type Sale {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime
+  deletedAt: DateTime
+  totalAmount: Int!
+  paymentMethod: PaymentMethod!
+  status: SaleStatus!
+  saleItens: [SaleItem!]!
+}
+
+"""Define os métodos de pagamento aceitos pelo sistema"""
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+  MONEY
+}
+
+"""Status de vendas"""
+enum SaleStatus {
+  COMPLETED
+  CANCELED
+}
+
 type Query {
   findAll: [Product!]!
   findById(id: String!): Product!
   findByBarcode(barcode: String!): Product!
   stockExtractByProduct(id: String!): [StockTransaction!]!
+  findAllSales: [Sale!]!
 }
 
 type Mutation {
@@ -55,6 +92,7 @@ type Mutation {
   updateProduct(id: String!, data: UpdateProductInput!): Product!
   removeProduct(id: String!): Product!
   createStockTransaction(data: CreateStockTransactionInput!): StockTransaction!
+  createSale(data: CreateSaleInput!): Sale!
 }
 
 input CreateProductInput {
@@ -77,4 +115,14 @@ input CreateStockTransactionInput {
   quantity: Int!
   description: String
   productId: String!
+}
+
+input CreateSaleInput {
+  paymentMethod: PaymentMethod!
+  items: [CreateSaleItemInput!]!
+}
+
+input CreateSaleItemInput {
+  productId: String!
+  quantity: Int!
 }

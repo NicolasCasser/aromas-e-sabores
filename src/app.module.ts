@@ -6,6 +6,7 @@ import { join } from 'path';
 import { AppDataSource } from './database/data-source';
 import { ProductModule } from './modules/product/product.module';
 import { StockTransactionModule } from './modules/stock-transaction/stock-transaction.module';
+import { SaleModule } from './modules/sale/sale.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { StockTransactionModule } from './modules/stock-transaction/stock-transa
     }),
     ProductModule,
     StockTransactionModule,
+    SaleModule,
   ],
 })
 export class AppModule {}

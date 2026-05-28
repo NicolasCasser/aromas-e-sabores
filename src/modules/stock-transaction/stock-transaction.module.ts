@@ -8,5 +8,6 @@ import { Product } from '../product/entities/product.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([StockTransaction, Product])],
   providers: [StockTransactionResolver, StockTransactionService],
+  exports: [StockTransactionService],
 })
 export class StockTransactionModule {}
