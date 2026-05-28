@@ -2,34 +2,19 @@ import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { SaleService } from './sale.service';
 import { Sale } from './entities/sale.entity';
 import { CreateSaleInput } from './dto/create-sale.input';
-import { UpdateSaleInput } from './dto/update-sale.input';
+import { SaleDTO } from './dto/sale.dto';
 
 @Resolver(() => Sale)
 export class SaleResolver {
   constructor(private readonly saleService: SaleService) {}
 
-  @Mutation(() => Sale)
-  createSale(@Args('createSaleInput') createSaleInput: CreateSaleInput) {
-    return this.saleService.create(createSaleInput);
+  @Mutation(() => SaleDTO)
+  async createSale(@Args('data') data: CreateSaleInput): Promise<SaleDTO> {
+    return this.saleService.create(data);
   }
 
-  @Query(() => [Sale], { name: 'sale' })
-  findAll() {
-    return this.saleService.findAll();
-  }
-
-  @Query(() => Sale, { name: 'sale' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.saleService.findOne(id);
-  }
-
-  @Mutation(() => Sale)
-  updateSale(@Args('updateSaleInput') updateSaleInput: UpdateSaleInput) {
-    return this.saleService.update(updateSaleInput.id, updateSaleInput);
-  }
-
-  @Mutation(() => Sale)
-  removeSale(@Args('id', { type: () => Int }) id: number) {
-    return this.saleService.remove(id);
+  @Query(() => [SaleDTO])
+  async findAllSales(): Promise<SaleDTO[]> {
+    return await this.saleService.findAll();
   }
 }

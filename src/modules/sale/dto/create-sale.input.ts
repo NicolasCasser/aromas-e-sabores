@@ -1,4 +1,4 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType, Field } from '@nestjs/graphql';
 import { PaymentMethod } from '../enum/payment-methods.enum';
 import { CreateSaleItemInput } from './create-sale-item.input';
 
