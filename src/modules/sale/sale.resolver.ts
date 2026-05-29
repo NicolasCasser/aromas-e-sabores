@@ -13,6 +13,11 @@ export class SaleResolver {
     return this.saleService.create(data);
   }
 
+  @Mutation(() => SaleDTO)
+  async cancelSale(@Args('id') id: string): Promise<SaleDTO> {
+    return this.saleService.cancel(id);
+  }
+
   @Query(() => [SaleDTO])
   async findAllSales(): Promise<SaleDTO[]> {
     return await this.saleService.findAll();

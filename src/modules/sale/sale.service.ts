@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateSaleInput } from './dto/create-sale.input';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -92,5 +96,37 @@ export class SaleService {
       relations: ['saleItens'],
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async cancel(id: string): Promise<Sale> {
+    // Necessário findOne por que findOneBy por padrão não trás os relacionamentos
+    const sale = await this.repository.findOne({
+      where: { id },
+      relations: ['saleItens'],
+    });
+
+    if (!sale) {
+      throw new NotFoundException('Venda não encontrada');
+    }
+
+    if (sale.status === SaleStatus.CANCELED) {
+      throw new BadRequestException(
+        `A venda com id ${sale.id} já está cancelada`,
+      );
+    }
+
+    sale.status = SaleStatus.CANCELED;
+
+    for (const item of sale.saleItens) {
+      await this.stockTransactionService.create({
+        type: TransactionType.IN,
+        quantity: item.quantity,
+        productId: item.productId,
+      });
+    }
+
+    await this.repository.save(sale);
+
+    return sale;
   }
 }

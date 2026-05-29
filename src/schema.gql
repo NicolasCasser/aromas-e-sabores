@@ -93,6 +93,7 @@ type Mutation {
   removeProduct(id: String!): Product!
   createStockTransaction(data: CreateStockTransactionInput!): StockTransaction!
   createSale(data: CreateSaleInput!): Sale!
+  cancelSale(id: String!): Sale!
 }
 
 input CreateProductInput {
