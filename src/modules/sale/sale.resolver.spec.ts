@@ -17,6 +17,7 @@ describe('SaleResolver', () => {
           useValue: {
             create: jest.fn(),
             findAll: jest.fn(),
+            cancel: jest.fn(),
           },
         },
       ],
@@ -91,6 +92,26 @@ describe('SaleResolver', () => {
       // Assert
       expect(result).toEqual(expectedList);
       expect(service.findAll).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('cancelSale', () => {
+    it('deve chamar o SaleService.cancel com o ID fornecido e retornar a venda cancelada', async () => {
+      // Arrange
+      const mockSale = {
+        id: 'venda-123',
+        status: SaleStatus.CANCELED,
+      };
+
+      service.cancel.mockResolvedValue(mockSale as any);
+
+      // Act
+      const result = await resolver.cancelSale('venda-123');
+
+      // Assert
+      expect(result).toEqual(mockSale);
+      expect(service.cancel).toHaveBeenCalledTimes(1);
+      expect(service.cancel).toHaveBeenCalledWith('venda-123');
     });
   });
 });

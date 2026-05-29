@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { SaleService } from './sale.service';
 import { Sale } from './entities/sale.entity';
@@ -9,6 +9,7 @@ import { ProductService } from '../product/product.service';
 import { StockTransactionService } from '../stock-transaction/stock-transaction.service';
 import { PaymentMethod } from './enum/payment-methods.enum';
 import { TransactionType } from '../stock-transaction/enum/transaction-type.enum';
+import { SaleStatus } from './enum/sale-status.enum';
 
 describe('SaleService', () => {
   let service: SaleService;
@@ -29,6 +30,7 @@ describe('SaleService', () => {
             save: jest.fn(),
             find: jest.fn(),
             findOneOrFail: jest.fn(),
+            findOne: jest.fn(),
           },
         },
         {
@@ -139,6 +141,72 @@ describe('SaleService', () => {
         productId: 'prod-1',
         quantity: 2,
         type: TransactionType.OUT,
+      });
+    });
+  });
+
+  describe('cancel', () => {
+    it('deve lançar NotFoundException se a venda não existir', async () => {
+      // Arrange
+      saleRepository.findOne.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.cancel('id-invalido')).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.cancel('id-invalido')).rejects.toThrow(
+        'Venda não encontrada',
+      );
+    });
+
+    it('deve lançar BadRequestException se a venda já estiver cancelada', async () => {
+      // Arrange
+      saleRepository.findOne.mockResolvedValue({
+        id: 'venda-123',
+        status: SaleStatus.CANCELED,
+      } as any);
+
+      // Act & Assert
+      await expect(service.cancel('venda-123')).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.cancel('venda-123')).rejects.toThrow(
+        'A venda com id venda-123 já está cancelada',
+      );
+    });
+
+    it('deve cancelar a venda e gerar transações de entrada no estoque para cada item', async () => {
+      // Arrange
+      const mockSale = {
+        id: 'venda-123',
+        status: SaleStatus.COMPLETED,
+        saleItens: [
+          { productId: 'prod-1', quantity: 2 },
+          { productId: 'prod-2', quantity: 5 },
+        ],
+      };
+
+      saleRepository.findOne.mockResolvedValue(mockSale as any);
+      saleRepository.save.mockResolvedValue(mockSale as any);
+      stockTransactionService.create.mockResolvedValue({} as any);
+
+      // Act
+      const result = await service.cancel('venda-123');
+
+      // Assert
+      expect(result.status).toBe(SaleStatus.CANCELED);
+      expect(saleRepository.save).toHaveBeenCalledWith(mockSale);
+
+      expect(stockTransactionService.create).toHaveBeenCalledTimes(2);
+      expect(stockTransactionService.create).toHaveBeenNthCalledWith(1, {
+        type: TransactionType.IN,
+        quantity: 2,
+        productId: 'prod-1',
+      });
+      expect(stockTransactionService.create).toHaveBeenNthCalledWith(2, {
+        type: TransactionType.IN,
+        quantity: 5,
+        productId: 'prod-2',
       });
     });
   });
