@@ -5,13 +5,13 @@ import { Product } from 'src/modules/product/entities/product.entity';
 
 @Entity('sale_item')
 export class SaleItem extends BaseEntity {
-  @Column({ type: 'int' })
+  @Column({ type: 'decimal', precision: 10, scale: 3 })
   quantity!: number;
 
-  @Column({ type: 'int' })
+  @Column({ name: 'unit_price', type: 'int', })
   unitPrice!: number;
 
-  @Column({ type: 'int' })
+  @Column({ name: 'sub_total', type: 'int' })
   subTotal!: number;
 
   @Column({ name: 'sale_id', type: 'uuid', nullable: false })

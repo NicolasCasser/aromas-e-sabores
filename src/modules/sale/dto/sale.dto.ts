@@ -9,12 +9,12 @@ export class SaleDTO extends BaseDTO {
   @Field(() => Int)
   totalAmount!: number;
 
-  @Field(() => PaymentMethod)
-  paymentMethod!: PaymentMethod;
+  @Field(() => PaymentMethod, { nullable: true })
+  paymentMethod?: PaymentMethod;
 
   @Field(() => SaleStatus)
   status!: SaleStatus;
 
-  @Field(() => [SaleItemDTO])
+  @Field(() => [SaleItemDTO], { nullable: true })
   saleItens?: SaleItemDTO[];
 }

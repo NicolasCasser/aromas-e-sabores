@@ -12,11 +12,13 @@ describe('StockTransactionService', () => {
   let service: StockTransactionService;
 
   // Falso manager do TypeORM para simular as respostas do banco
-  const mockEntityManager = {
+  const mockEntityManager: any = {
     findOneBy: jest.fn() as jest.Mock<any>,
-    create: jest.fn() as jest.Mock<any>,
+    create: jest.fn().mockImplementation((dto) => dto),
     save: jest.fn() as jest.Mock<any>,
   };
+
+  mockEntityManager.getRepository = jest.fn().mockReturnValue(mockEntityManager);
 
   // Falso DataSource que apenas executa o que tem dentro da transação passando o mockManager
   const mockDataSource = {

@@ -1,9 +1,9 @@
-import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ID, Int, ObjectType } from '@nestjs/graphql';
 import { BaseDTO } from 'src/modules/bases/dto/base.dto';
 
 @ObjectType('SaleItem')
 export class SaleItemDTO extends BaseDTO {
-  @Field(() => Int)
+  @Field(() => Float)
   quantity!: number;
 
   @Field(() => Int)

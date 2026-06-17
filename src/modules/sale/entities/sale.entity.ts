@@ -6,11 +6,11 @@ import { SaleItem } from './sale-item.entity';
 
 @Entity('sale')
 export class Sale extends BaseEntity {
-  @Column({ type: 'int' })
+  @Column({ name: 'total_amount', type: 'int', default: 0 })
   totalAmount!: number;
 
-  @Column({ type: 'simple-enum', enum: PaymentMethod })
-  paymentMethod!: PaymentMethod;
+  @Column({ name: 'payment_method', type: 'simple-enum', enum: PaymentMethod, nullable: true })
+  paymentMethod?: PaymentMethod;
 
   @Column({ type: 'simple-enum', enum: SaleStatus })
   status!: SaleStatus;

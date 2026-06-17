@@ -1,16 +1,28 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { SaleService } from './sale.service';
 import { Sale } from './entities/sale.entity';
-import { CreateSaleInput } from './dto/create-sale.input';
 import { SaleDTO } from './dto/sale.dto';
+import { AddSaleItemByBarcodeInput } from './dto/add-sale-item-by-barcode.input';
+import { SaleItemDTO } from './dto/sale-item.dto';
+import { CompleteSaleInput } from './dto/complete-sale.input';
 
 @Resolver(() => Sale)
 export class SaleResolver {
   constructor(private readonly saleService: SaleService) {}
 
   @Mutation(() => SaleDTO)
-  async createSale(@Args('data') data: CreateSaleInput): Promise<SaleDTO> {
-    return this.saleService.create(data);
+  async createSale(): Promise<SaleDTO> {
+    return this.saleService.create();
+  }
+
+  @Mutation(() => SaleItemDTO)
+  async addItemByBarcode(@Args('data') data: AddSaleItemByBarcodeInput): Promise<SaleItemDTO> {
+    return this.saleService.addItemByBarcode(data.saleId, data.barcode);
+  }
+
+  @Mutation(() => SaleDTO)
+  async completeSale(@Args('data') data: CompleteSaleInput): Promise<SaleDTO> {
+    return this.saleService.completeSale(data.saleId, data.paymentMethod);
   }
 
   @Mutation(() => SaleDTO)

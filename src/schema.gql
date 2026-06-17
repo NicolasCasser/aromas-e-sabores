@@ -48,7 +48,7 @@ type SaleItem {
   createdAt: DateTime!
   updatedAt: DateTime
   deletedAt: DateTime
-  quantity: Int!
+  quantity: Float!
   unitPrice: Int!
   subTotal: Int!
   saleId: ID!
@@ -61,9 +61,9 @@ type Sale {
   updatedAt: DateTime
   deletedAt: DateTime
   totalAmount: Int!
-  paymentMethod: PaymentMethod!
+  paymentMethod: PaymentMethod
   status: SaleStatus!
-  saleItens: [SaleItem!]!
+  saleItens: [SaleItem!]
 }
 
 """Define os métodos de pagamento aceitos pelo sistema"""
@@ -75,6 +75,7 @@ enum PaymentMethod {
 
 """Status de vendas"""
 enum SaleStatus {
+  OPEN
   COMPLETED
   CANCELED
 }
@@ -92,7 +93,9 @@ type Mutation {
   updateProduct(id: String!, data: UpdateProductInput!): Product!
   removeProduct(id: String!): Product!
   createStockTransaction(data: CreateStockTransactionInput!): StockTransaction!
-  createSale(data: CreateSaleInput!): Sale!
+  createSale: Sale!
+  addItemByBarcode(data: AddSaleItemByBarcodeInput!): SaleItem!
+  completeSale(data: CompleteSaleInput!): Sale!
   cancelSale(id: String!): Sale!
 }
 
@@ -118,12 +121,12 @@ input CreateStockTransactionInput {
   productId: String!
 }
 
-input CreateSaleInput {
-  paymentMethod: PaymentMethod!
-  items: [CreateSaleItemInput!]!
+input AddSaleItemByBarcodeInput {
+  saleId: ID!
+  barcode: String!
 }
 
-input CreateSaleItemInput {
-  productId: String!
-  quantity: Int!
+input CompleteSaleInput {
+  saleId: ID!
+  paymentMethod: PaymentMethod!
 }
