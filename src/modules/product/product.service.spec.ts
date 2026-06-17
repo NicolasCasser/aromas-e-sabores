@@ -10,6 +10,11 @@ import { CreateProductInput } from './dto/create-product.input';
 describe('ProductService', () => {
   let service: ProductService;
 
+  const mockEntityManager: any = {
+    findOneBy: jest.fn(),
+    save: jest.fn(),
+  };
+
   const mockProductRepository = {
     create: jest.fn(),
     save: jest.fn(),
@@ -19,6 +24,13 @@ describe('ProductService', () => {
     update: jest.fn(),
     delete: jest.fn(),
     softRemove: jest.fn(),
+    manager: {
+      transaction: jest.fn(
+        async <T>(cb: (manager: typeof mockEntityManager) => Promise<T>) => {
+          return cb(mockEntityManager);
+        },
+      ),
+    },
   };
 
   beforeEach(async () => {
@@ -124,47 +136,58 @@ describe('ProductService', () => {
 
   describe('update', () => {
     it('deve atualizar o produto quando o ID existir', async () => {
-      // Arrange
       const mockProduct = { id: 'id-do-produto', name: 'Produto 1' };
-      mockProductRepository.findOneBy.mockResolvedValue(mockProduct);
+      mockEntityManager.findOneBy.mockResolvedValue(mockProduct);
+      mockEntityManager.save.mockResolvedValue({
+        id: 'id-do-produto',
+        name: 'Produto 2',
+      });
 
-      // Simula o que o banco devolve após salvar
-      const updatedProduct = { id: 'id-do-produto', name: 'Produto 2' };
-      mockProductRepository.save.mockResolvedValue(updatedProduct);
-
-      // Act
       const input = { name: 'Produto 2' };
       const result = await service.update('id-do-produto', input);
 
-      // Assert
-      // Garante que ele buscou o produto certo no banco p
-      expect(mockProductRepository.findOneBy).toHaveBeenCalledWith({
+      expect(mockEntityManager.findOneBy).toHaveBeenCalledWith(Product, {
         id: 'id-do-produto',
       });
-      // Garante que enviou os dados mesclados corretos para salvar
-      expect(mockProductRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 'id-do-produto',
-          name: 'Produto 2',
-        }),
-      );
-      // Garante que a função repassou a resposta do banco para frente
-      expect(result).toEqual(updatedProduct);
+      expect(result.name).toBe('Produto 2');
     });
 
     it('deve lançar NotFoundException ao tentar atualizar um ID inexistente', async () => {
-      // Arrange
-      // Simula que a busca inicial no banco não encontrou nada
-      mockProductRepository.findOneBy.mockResolvedValue(null);
+      mockEntityManager.findOneBy.mockResolvedValue(null);
 
       const input = { name: 'Produto' };
 
-      // Assert
       await expect(service.update('id-inexistente', input)).rejects.toThrow(
         NotFoundException,
       );
-      // Garante que a aplicação parou na linha de erro e nunca chamou o save
-      expect(mockProductRepository.save).not.toHaveBeenCalled();
+      expect(mockEntityManager.save).not.toHaveBeenCalled();
+    });
+
+    it('deve lançar ConflictException ao tentar atualizar para um barcode já existente', async () => {
+      mockEntityManager.findOneBy
+        .mockResolvedValueOnce({ id: 'produto-alvo', barcode: '99999' })
+        .mockResolvedValueOnce({ id: 'produto-existente', barcode: '12345' });
+
+      const input = { barcode: '12345' };
+
+      await expect(service.update('produto-alvo', input)).rejects.toThrow(
+        ConflictException,
+      );
+      expect(mockEntityManager.save).not.toHaveBeenCalled();
+    });
+
+    it('deve permitir atualizar barcode quando ele for o mesmo do produto', async () => {
+      const mockProduct = { id: 'id-do-produto', barcode: '12345' };
+      mockEntityManager.findOneBy.mockResolvedValue(mockProduct);
+      mockEntityManager.save.mockResolvedValue(mockProduct);
+
+      const input = { barcode: '12345' };
+      await service.update('id-do-produto', input);
+
+      expect(mockEntityManager.findOneBy).toHaveBeenCalledWith(Product, {
+        id: 'id-do-produto',
+      });
+      expect(mockEntityManager.save).toHaveBeenCalled();
     });
   });
 

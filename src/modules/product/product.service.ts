@@ -61,14 +61,28 @@ export class ProductService {
   }
 
   async update(id: string, data: UpdateProductInput): Promise<Product> {
-    const product = await this.repository.findOneBy({ id });
+    return await this.repository.manager.transaction(async (manager) => {
+      const product = await manager.findOneBy(Product, { id });
 
-    if (!product) {
-      throw new NotFoundException(`Produto com id ${id} não encontrado.`);
-    }
+      if (!product) {
+        throw new NotFoundException(`Produto com id ${id} não encontrado.`);
+      }
 
-    Object.assign(product, data);
-    return this.repository.save(product);
+      if (data.barcode && data.barcode !== product.barcode) {
+        const existing = await manager.findOneBy(Product, {
+          barcode: data.barcode,
+        });
+
+        if (existing) {
+          throw new ConflictException(
+            `O código de barras ${data.barcode} já está cadastrado em outro produto.`,
+          );
+        }
+      }
+
+      Object.assign(product, data);
+      return await manager.save(product);
+    });
   }
 
   async remove(id: string): Promise<Product> {
