@@ -19,13 +19,15 @@ describe('SaleService', () => {
   let saleItemRepository: jest.Mocked<Repository<SaleItem>>;
   let productService: jest.Mocked<ProductService>;
   let stockTransactionService: jest.Mocked<StockTransactionService>;
-  
+
   let mockTransactionalSaleItemRepo: any;
   let mockEntityManager: any;
 
   beforeEach(async () => {
     mockTransactionalSaleItemRepo = {
-      create: jest.fn().mockImplementation((dto) => dto),
+      create: jest
+        .fn()
+        .mockImplementation((dto: Partial<SaleItem>) => dto as SaleItem),
       save: jest.fn().mockResolvedValue({ id: 'saved-item' }),
     };
 
@@ -45,9 +47,13 @@ describe('SaleService', () => {
             findOneOrFail: jest.fn(),
             findOne: jest.fn(),
             manager: {
-              transaction: jest.fn().mockImplementation(async (callback) => {
-                return await callback(mockEntityManager);
-              }),
+              transaction: jest
+                .fn()
+                .mockImplementation(
+                  async <T>(callback: (em: any) => Promise<T>) => {
+                    return await callback(mockEntityManager);
+                  },
+                ),
             },
           },
         },
@@ -92,7 +98,7 @@ describe('SaleService', () => {
       // Arrange
       const mockSale = { status: SaleStatus.OPEN, totalAmount: 0 } as Sale;
       saleRepository.create.mockReturnValue(mockSale);
-      saleRepository.save.mockResolvedValue({...mockSale, id: 'sale-id'});
+      saleRepository.save.mockResolvedValue({ ...mockSale, id: 'sale-id' });
 
       // Act
       const result = await service.create();
@@ -183,8 +189,8 @@ describe('SaleService', () => {
         unitType: UnitType.KG,
         price: 1000, // 10 reais em centavos
       } as Product);
-      saleItemRepository.create.mockImplementation((dto) => dto as any);
-      saleItemRepository.save.mockResolvedValue({ id: 'item-1' } as any);
+      saleItemRepository.create.mockImplementation((dto) => dto as SaleItem);
+      saleItemRepository.save.mockResolvedValue({ id: 'item-1' } as SaleItem);
 
       // Act
       const etiquetaBalanca = '2000450015509'; // Embutido R$ 15,50
@@ -217,14 +223,16 @@ describe('SaleService', () => {
         unitType: UnitType.UN,
         price: 2500,
       } as Product);
-      saleItemRepository.create.mockImplementation((dto) => dto as any);
+      saleItemRepository.create.mockImplementation((dto) => dto as SaleItem);
 
       // Act
       const etiquetaFabrica = '7891020304050';
       await service.addItemByBarcode('sale-1', etiquetaFabrica);
 
       // Assert
-      expect(productService.findByBarcode).toHaveBeenCalledWith('7891020304050');
+      expect(productService.findByBarcode).toHaveBeenCalledWith(
+        '7891020304050',
+      );
       expect(mockTransactionalSaleItemRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({
           quantity: 1,
@@ -236,7 +244,7 @@ describe('SaleService', () => {
     it('Deve realizar fallback para UN se um código de fábrica começar com 2', async () => {
       // Arrange
       saleRepository.findOne.mockResolvedValue({ id: 'sale-1' } as any);
-      
+
       // Simula a primeira tentativa falhando (não acha o código de 5 dígitos '12345')
       // e a segunda tentativa (fallback) encontrando o código inteiro.
       productService.findByBarcode
@@ -247,8 +255,8 @@ describe('SaleService', () => {
           unitType: UnitType.UN,
           price: 5000,
         } as any);
-        
-      saleItemRepository.create.mockImplementation((dto) => dto as any);
+
+      saleItemRepository.create.mockImplementation((dto) => dto as SaleItem);
 
       // Act
       const etiquetaRara = '2123456789012';
@@ -256,7 +264,9 @@ describe('SaleService', () => {
 
       // Assert
       expect(productService.findByBarcode).toHaveBeenCalledWith('12345'); // Tentou fatiar primeiro
-      expect(productService.findByBarcode).toHaveBeenCalledWith('2123456789012'); // Fez o fallback
+      expect(productService.findByBarcode).toHaveBeenCalledWith(
+        '2123456789012',
+      ); // Fez o fallback
       expect(mockTransactionalSaleItemRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({ quantity: 1 }),
       );
@@ -269,13 +279,17 @@ describe('SaleService', () => {
         id: 'prod-id',
         barcode: '00045',
         unitType: UnitType.UN, // Erro de cadastro simulado
-        price: 10.00,
+        price: 10.0,
       } as any);
 
       // Act & Assert
       const etiquetaBalanca = '2000450015509';
-      await expect(service.addItemByBarcode('sale-1', etiquetaBalanca)).rejects.toThrow(BadRequestException);
-      await expect(service.addItemByBarcode('sale-1', etiquetaBalanca)).rejects.toThrow(
+      await expect(
+        service.addItemByBarcode('sale-1', etiquetaBalanca),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.addItemByBarcode('sale-1', etiquetaBalanca),
+      ).rejects.toThrow(
         'Conflito: Produto lido pela balança está cadastrado como unitário no sistema',
       );
     });
@@ -294,7 +308,9 @@ describe('SaleService', () => {
       } as Sale;
 
       saleRepository.findOne.mockResolvedValue(mockSale);
-      saleRepository.save.mockImplementation((entity) => Promise.resolve(entity as Sale));
+      saleRepository.save.mockImplementation((entity) =>
+        Promise.resolve(entity as Sale),
+      );
 
       // Act
       const result = await service.completeSale('sale-id', PaymentMethod.PIX);
@@ -312,7 +328,9 @@ describe('SaleService', () => {
         saleItens: [],
       } as any);
 
-      await expect(service.completeSale('sale-id', PaymentMethod.PIX)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.completeSale('sale-id', PaymentMethod.PIX),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

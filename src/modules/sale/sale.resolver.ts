@@ -16,7 +16,9 @@ export class SaleResolver {
   }
 
   @Mutation(() => SaleItemDTO)
-  async addItemByBarcode(@Args('data') data: AddSaleItemByBarcodeInput): Promise<SaleItemDTO> {
+  async addItemByBarcode(
+    @Args('data') data: AddSaleItemByBarcodeInput,
+  ): Promise<SaleItemDTO> {
     return this.saleService.addItemByBarcode(data.saleId, data.barcode);
   }
 

@@ -18,7 +18,9 @@ describe('StockTransactionService', () => {
     save: jest.fn() as jest.Mock<any>,
   };
 
-  mockEntityManager.getRepository = jest.fn().mockReturnValue(mockEntityManager);
+  mockEntityManager.getRepository = jest
+    .fn()
+    .mockReturnValue(mockEntityManager);
 
   // Falso DataSource que apenas executa o que tem dentro da transação passando o mockManager
   const mockDataSource = {

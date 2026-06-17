@@ -20,20 +20,31 @@ export class StockTransactionService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async create(data: CreateStockTransactionInput, manager?: EntityManager): Promise<StockTransaction> {
+  async create(
+    data: CreateStockTransactionInput,
+    manager?: EntityManager,
+  ): Promise<StockTransaction> {
     // Se recebeu um manager de fora, usa ele para rodar na mesma transação.
     if (manager) {
       return await this.processStockMovement(data, manager);
     }
 
     // Se não recebeu, abre uma transação própria e isolada.
-    return await this.dataSource.transaction(async (transactionalEntityManager) => {
-      return await this.processStockMovement(data, transactionalEntityManager);
-    });
+    return await this.dataSource.transaction(
+      async (transactionalEntityManager) => {
+        return await this.processStockMovement(
+          data,
+          transactionalEntityManager,
+        );
+      },
+    );
   }
 
   // Regra de Negócio Isolada (Método Privado)
-  private async processStockMovement(data: CreateStockTransactionInput, manager: EntityManager): Promise<StockTransaction> {
+  private async processStockMovement(
+    data: CreateStockTransactionInput,
+    manager: EntityManager,
+  ): Promise<StockTransaction> {
     // Pega os repositórios diretamente do manager que está controlando o contexto atual
     const productRepository = manager.getRepository(Product);
     const stockTransactionRepository = manager.getRepository(StockTransaction);
@@ -41,7 +52,9 @@ export class StockTransactionService {
     const product = await productRepository.findOneBy({ id: data.productId });
 
     if (!product) {
-      throw new NotFoundException(`Produto com id ${data.productId} não encontrado`);
+      throw new NotFoundException(
+        `Produto com id ${data.productId} não encontrado`,
+      );
     }
 
     if (data.type === TransactionType.IN) {

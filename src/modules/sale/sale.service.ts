@@ -20,7 +20,7 @@ export class SaleService {
   constructor(
     @InjectRepository(Sale)
     private readonly repository: Repository<Sale>,
-  
+
     private readonly productService: ProductService,
     private readonly stockTransactionService: StockTransactionService,
   ) {}
@@ -74,11 +74,14 @@ export class SaleService {
     return sale;
   }
 
-  async addItemByBarcode(saleId: string, scannedBarcode: string): Promise<SaleItem> {
+  async addItemByBarcode(
+    saleId: string,
+    scannedBarcode: string,
+  ): Promise<SaleItem> {
     // Verifica se a venda existe
     const sale = await this.repository.findOne({ where: { id: saleId } });
-    
-    if(!sale) {
+
+    if (!sale) {
       throw new NotFoundException('Venda não encontrada');
     }
 
@@ -89,7 +92,7 @@ export class SaleService {
     // Identifica se tem padrão de balança (começa com 2 e tem 13 dígitos)
     if (scannedBarcode.startsWith('2') && scannedBarcode.length === 13) {
       const productCode = scannedBarcode.substring(1, 6);
-      scaleTotalPrice = Number(scannedBarcode.substring(6, 12)); 
+      scaleTotalPrice = Number(scannedBarcode.substring(6, 12));
 
       // Tenta buscar o produto pelo código interno de 5 dígitos fatiado
       product = await this.productService.findByBarcode(productCode);
@@ -117,41 +120,52 @@ export class SaleService {
     if (isScaleBarcode) {
       // Produto achado pelo fatiamento, mas cadastrado errado pela loja como UN
       if (product.unitType === UnitType.UN) {
-        throw new BadRequestException('Conflito: Produto lido pela balança está cadastrado como unitário no sistema');
+        throw new BadRequestException(
+          'Conflito: Produto lido pela balança está cadastrado como unitário no sistema',
+        );
       }
 
       // Produto pesado (KG)
       subTotal = scaleTotalPrice; // Confia no valor que veio impresso na etiqueta
-      quantity = Number((subTotal / product.price).toFixed(3)) // Calcula o peso fixo exato para baixar no estoque
+      quantity = Number((subTotal / product.price).toFixed(3)); // Calcula o peso fixo exato para baixar no estoque
     } else {
       // Produto unitário
       quantity = 1;
       subTotal = product.price; // Cobra o valor exato que está no banco de dados
     }
 
-    return await this.repository.manager.transaction(async (transactionEntityManager) => {
-      // Baixa o estoque registrando a transação
-      await this.stockTransactionService.create({
-        productId: product.id,
-        quantity,
-        type: TransactionType.OUT,
-      }, transactionEntityManager);
+    return await this.repository.manager.transaction(
+      async (transactionEntityManager) => {
+        // Baixa o estoque registrando a transação
+        await this.stockTransactionService.create(
+          {
+            productId: product.id,
+            quantity,
+            type: TransactionType.OUT,
+          },
+          transactionEntityManager,
+        );
 
-      const transactionalSaleItemRepo = transactionEntityManager.getRepository(SaleItem);
-  
-      const saleItem = transactionalSaleItemRepo.create({
-        saleId: sale.id,
-        productId: product.id,
-        quantity,
-        unitPrice: product.price,
-        subTotal,
-      });
-    
-      return await transactionalSaleItemRepo.save(saleItem);;
-    });
+        const transactionalSaleItemRepo =
+          transactionEntityManager.getRepository(SaleItem);
+
+        const saleItem = transactionalSaleItemRepo.create({
+          saleId: sale.id,
+          productId: product.id,
+          quantity,
+          unitPrice: product.price,
+          subTotal,
+        });
+
+        return await transactionalSaleItemRepo.save(saleItem);
+      },
+    );
   }
 
-  async completeSale(saleId: string, paymentMethod: PaymentMethod): Promise<Sale> {
+  async completeSale(
+    saleId: string,
+    paymentMethod: PaymentMethod,
+  ): Promise<Sale> {
     // Busca a venda e já traz os itens athis.repository.manager.transaction.ssociados a ela para poder somar
     const sale = await this.repository.findOne({
       where: { id: saleId },
@@ -163,15 +177,20 @@ export class SaleService {
     }
 
     if (sale.status !== SaleStatus.OPEN) {
-      throw new BadRequestException('Apenas vendas abertas podem ser finalizadas');
+      throw new BadRequestException(
+        'Apenas vendas abertas podem ser finalizadas',
+      );
     }
-    
+
     if (!sale.saleItens || sale.saleItens.length === 0) {
       throw new BadRequestException('Não é possível uma venda sem produtos');
     }
 
     // Soma o subtotal de todos os itens bipados no caixa
-    const calculatedTotal = sale.saleItens.reduce((acc, item) => acc + item.subTotal, 0);
+    const calculatedTotal = sale.saleItens.reduce(
+      (acc, item) => acc + item.subTotal,
+      0,
+    );
 
     sale.totalAmount = calculatedTotal;
     sale.paymentMethod = paymentMethod;

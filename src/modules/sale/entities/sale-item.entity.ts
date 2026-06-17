@@ -8,7 +8,7 @@ export class SaleItem extends BaseEntity {
   @Column({ type: 'decimal', precision: 10, scale: 3 })
   quantity!: number;
 
-  @Column({ name: 'unit_price', type: 'int', })
+  @Column({ name: 'unit_price', type: 'int' })
   unitPrice!: number;
 
   @Column({ name: 'sub_total', type: 'int' })

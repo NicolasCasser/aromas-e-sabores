@@ -9,7 +9,12 @@ export class Sale extends BaseEntity {
   @Column({ name: 'total_amount', type: 'int', default: 0 })
   totalAmount!: number;
 
-  @Column({ name: 'payment_method', type: 'simple-enum', enum: PaymentMethod, nullable: true })
+  @Column({
+    name: 'payment_method',
+    type: 'simple-enum',
+    enum: PaymentMethod,
+    nullable: true,
+  })
   paymentMethod?: PaymentMethod;
 
   @Column({ type: 'simple-enum', enum: SaleStatus })

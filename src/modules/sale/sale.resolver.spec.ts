@@ -127,12 +127,18 @@ describe('SaleResolver', () => {
       service.addItemByBarcode.mockResolvedValue(mockSaleItem);
 
       // Act
-      const result = await resolver.addItemByBarcode({ saleId: 'sale-1', barcode: '2000450015509' });
+      const result = await resolver.addItemByBarcode({
+        saleId: 'sale-1',
+        barcode: '2000450015509',
+      });
 
       // Assert
       expect(result).toEqual(mockSaleItem);
       expect(service.addItemByBarcode).toHaveBeenCalledTimes(1);
-      expect(service.addItemByBarcode).toHaveBeenCalledWith('sale-1', '2000450015509');
+      expect(service.addItemByBarcode).toHaveBeenCalledWith(
+        'sale-1',
+        '2000450015509',
+      );
     });
   });
 
@@ -149,12 +155,18 @@ describe('SaleResolver', () => {
       service.completeSale.mockResolvedValue(mockCompletedSale);
 
       // Act
-      const result = await resolver.completeSale({ saleId: 'sale-1', paymentMethod: PaymentMethod.PIX});
+      const result = await resolver.completeSale({
+        saleId: 'sale-1',
+        paymentMethod: PaymentMethod.PIX,
+      });
 
       // Assert
       expect(result).toEqual(mockCompletedSale);
       expect(service.completeSale).toHaveBeenCalledTimes(1);
-      expect(service.completeSale).toHaveBeenCalledWith('sale-1', PaymentMethod.PIX);
+      expect(service.completeSale).toHaveBeenCalledWith(
+        'sale-1',
+        PaymentMethod.PIX,
+      );
     });
   });
 });
