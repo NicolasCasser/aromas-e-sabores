@@ -22,7 +22,13 @@ export class Product extends BaseEntity {
   @Column({ type: 'int', nullable: false })
   price!: number;
 
-  @Column({ name: 'current_stock', type: 'int', nullable: false })
+  @Column({
+    name: 'current_stock',
+    type: 'decimal',
+    precision: 10,
+    scale: 3,
+    nullable: false,
+  })
   currentStock!: number;
 
   // Um Produto tem Várias Transações

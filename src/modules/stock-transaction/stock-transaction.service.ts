@@ -6,7 +6,7 @@ import {
 import { CreateStockTransactionInput } from './dto/create-stock-transaction.input';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StockTransaction } from './entities/stock-transaction.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { Product } from '../product/entities/product.entity';
 import { TransactionType } from './enum/transaction-type.enum';
 
@@ -20,34 +20,57 @@ export class StockTransactionService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async create(data: CreateStockTransactionInput): Promise<StockTransaction> {
-    // Tudo que estiver dentro desse bloco só será salvo no banco de fato se não der nenhum erro
-    // Evita que o currentStock de um produto seja alterado sem a stockTransaction ser criada em caso de queda do servidor
-    return await this.dataSource.transaction(async (manager) => {
-      const product = await manager.findOneBy(Product, { id: data.productId });
+  async create(
+    data: CreateStockTransactionInput,
+    manager?: EntityManager,
+  ): Promise<StockTransaction> {
+    // Se recebeu um manager de fora, usa ele para rodar na mesma transação.
+    if (manager) {
+      return await this.processStockMovement(data, manager);
+    }
 
-      if (!product) {
-        throw new NotFoundException(
-          `Produto com id ${data.productId} não encontrado`,
+    // Se não recebeu, abre uma transação própria e isolada.
+    return await this.dataSource.transaction(
+      async (transactionalEntityManager) => {
+        return await this.processStockMovement(
+          data,
+          transactionalEntityManager,
         );
+      },
+    );
+  }
+
+  // Regra de Negócio Isolada (Método Privado)
+  private async processStockMovement(
+    data: CreateStockTransactionInput,
+    manager: EntityManager,
+  ): Promise<StockTransaction> {
+    // Pega os repositórios diretamente do manager que está controlando o contexto atual
+    const productRepository = manager.getRepository(Product);
+    const stockTransactionRepository = manager.getRepository(StockTransaction);
+
+    const product = await productRepository.findOneBy({ id: data.productId });
+
+    if (!product) {
+      throw new NotFoundException(
+        `Produto com id ${data.productId} não encontrado`,
+      );
+    }
+
+    if (data.type === TransactionType.IN) {
+      product.currentStock += data.quantity;
+    } else {
+      if (data.quantity > product.currentStock) {
+        throw new BadRequestException('Estoque insuficiente.');
       }
+      product.currentStock -= data.quantity;
+    }
 
-      if (data.type === TransactionType.IN) {
-        product.currentStock += data.quantity;
-      } else {
-        if (data.quantity > product.currentStock) {
-          throw new BadRequestException('Estoque insuficiente.');
-        }
-        product.currentStock -= data.quantity;
-      }
+    // Salva as alterações usando os repositórios do manager
+    await productRepository.save(product);
 
-      // Salva o produto atualizado via manager
-      await manager.save(product);
-
-      // Cria e salva a movimentação via manager
-      const stockTransaction = manager.create(StockTransaction, data);
-      return await manager.save(stockTransaction);
-    });
+    const stockTransaction = stockTransactionRepository.create(data);
+    return await stockTransactionRepository.save(stockTransaction);
   }
 
   async extractByProduct(id: string): Promise<StockTransaction[]> {

@@ -3,6 +3,8 @@ import { SaleResolver } from './sale.resolver';
 import { SaleService } from './sale.service';
 import { PaymentMethod } from './enum/payment-methods.enum';
 import { SaleStatus } from './enum/sale-status.enum';
+import { SaleItem } from './entities/sale-item.entity';
+import { Sale } from './entities/sale.entity';
 
 describe('SaleResolver', () => {
   let resolver: SaleResolver;
@@ -18,6 +20,8 @@ describe('SaleResolver', () => {
             create: jest.fn(),
             findAll: jest.fn(),
             cancel: jest.fn(),
+            addItemByBarcode: jest.fn(),
+            completeSale: jest.fn(),
           },
         },
       ],
@@ -36,16 +40,10 @@ describe('SaleResolver', () => {
   describe('createSale', () => {
     it('deve chamar o SaleService.create com os dados de entrada e retornar a venda criada', async () => {
       // Arrange
-      const input = {
-        paymentMethod: PaymentMethod.MONEY,
-        items: [{ productId: '1', quantity: 2 }],
-      };
-
       const expectedSale = {
         id: '1',
-        totalAmount: 1000,
-        paymentMethod: PaymentMethod.MONEY,
-        status: SaleStatus.COMPLETED,
+        totalAmount: 0,
+        status: SaleStatus.OPEN,
         createdAt: new Date(),
         saleItens: [],
       };
@@ -53,12 +51,11 @@ describe('SaleResolver', () => {
       service.create.mockResolvedValue(expectedSale);
 
       // Act
-      const result = await resolver.createSale(input);
+      const result = await resolver.createSale();
 
       // Assert
       expect(result).toEqual(expectedSale);
       expect(service.create).toHaveBeenCalledTimes(1);
-      expect(service.create).toHaveBeenCalledWith(input);
     });
   });
 
@@ -112,6 +109,64 @@ describe('SaleResolver', () => {
       expect(result).toEqual(mockSale);
       expect(service.cancel).toHaveBeenCalledTimes(1);
       expect(service.cancel).toHaveBeenCalledWith('venda-123');
+    });
+  });
+
+  describe('addItemByBarcode', () => {
+    it('deve repassar o saleId e o barcode para o SaleService e retornar o item salvo', async () => {
+      // Arrange
+      const mockSaleItem = {
+        id: 'item-1',
+        saleId: 'sale-1',
+        productId: 'prod-1',
+        quantity: 1.55,
+        unitPrice: 1000,
+        subTotal: 1550,
+      } as SaleItem;
+
+      service.addItemByBarcode.mockResolvedValue(mockSaleItem);
+
+      // Act
+      const result = await resolver.addItemByBarcode({
+        saleId: 'sale-1',
+        barcode: '2000450015509',
+      });
+
+      // Assert
+      expect(result).toEqual(mockSaleItem);
+      expect(service.addItemByBarcode).toHaveBeenCalledTimes(1);
+      expect(service.addItemByBarcode).toHaveBeenCalledWith(
+        'sale-1',
+        '2000450015509',
+      );
+    });
+  });
+
+  describe('completeSale', () => {
+    it('deve repassar o saleId e o método de pagamento para o SaleService e retornar a venda finalizada', async () => {
+      // Arrange
+      const mockCompletedSale = {
+        id: 'sale-1',
+        totalAmount: 4050,
+        paymentMethod: PaymentMethod.PIX,
+        status: SaleStatus.COMPLETED,
+      } as Sale;
+
+      service.completeSale.mockResolvedValue(mockCompletedSale);
+
+      // Act
+      const result = await resolver.completeSale({
+        saleId: 'sale-1',
+        paymentMethod: PaymentMethod.PIX,
+      });
+
+      // Assert
+      expect(result).toEqual(mockCompletedSale);
+      expect(service.completeSale).toHaveBeenCalledTimes(1);
+      expect(service.completeSale).toHaveBeenCalledWith(
+        'sale-1',
+        PaymentMethod.PIX,
+      );
     });
   });
 });
