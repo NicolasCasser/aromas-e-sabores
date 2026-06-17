@@ -13,9 +13,9 @@ describe('StockTransactionService', () => {
 
   // Falso manager do TypeORM para simular as respostas do banco
   const mockEntityManager: any = {
-    findOneBy: jest.fn() as jest.Mock<any>,
+    findOneBy: jest.fn(),
     create: jest.fn().mockImplementation((dto) => dto),
-    save: jest.fn() as jest.Mock<any>,
+    save: jest.fn(),
   };
 
   mockEntityManager.getRepository = jest
