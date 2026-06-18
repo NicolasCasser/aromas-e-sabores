@@ -80,12 +80,17 @@ enum SaleStatus {
   CANCELED
 }
 
+type PaginatedSalesDTO {
+  items: [Sale!]!
+  totalCount: Int!
+}
+
 type Query {
   findAll: [Product!]!
   findById(id: String!): Product!
   findByBarcode(barcode: String!): Product!
   stockExtractByProduct(id: String!): [StockTransaction!]!
-  findAllSales: [Sale!]!
+  findAllSales(skip: Int = 0, take: Int = 20, startDate: DateTime, endDate: DateTime, status: SaleStatus, paymentMethod: PaymentMethod): PaginatedSalesDTO!
 }
 
 type Mutation {

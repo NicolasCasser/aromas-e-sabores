@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { SaleService } from './sale.service';
 import { Sale } from './entities/sale.entity';
 import { SaleItem } from './entities/sale-item.entity';
@@ -53,6 +53,7 @@ describe('SaleService', () => {
             save: jest.fn(),
             find: jest.fn(),
             findOne: jest.fn(),
+            findAndCount: jest.fn(),
             manager: {
               transaction: jest.fn(
                 async <T>(
@@ -105,6 +106,88 @@ describe('SaleService', () => {
       });
       expect(saleRepository.save).toHaveBeenCalledWith(mockSale);
       expect(result.id).toBe('sale-id');
+    });
+  });
+
+  describe('findAll', () => {
+    it('deve retornar uma lista paginada de vendas e o total geral', async () => {
+      // Arrange
+      const mockArgs = { skip: 0, take: 10 };
+      const mockSalesList = [{ id: 'sale-id', totalAmount: 1000 } as Sale];
+      const mockTotalCount = 1;
+
+      saleRepository.findAndCount.mockResolvedValue([
+        mockSalesList,
+        mockTotalCount,
+      ]);
+
+      // Act
+      const result = await service.findAll(mockArgs);
+
+      // Assert
+      expect(saleRepository.findAndCount).toHaveBeenCalled();
+      expect(result.items).toEqual(mockSalesList);
+      expect(result.totalCount).toBe(mockTotalCount);
+    });
+
+    it('deve retornar uma lista vazia e totalCount zerado quando não houver vendas que correspondem aos filtros', async () => {
+      // Arrange
+      const mockArgs = { status: SaleStatus.CANCELED };
+      const mockSalesList: Sale[] = [];
+      const mockTotalCount = 0;
+
+      saleRepository.findAndCount.mockResolvedValue([
+        mockSalesList,
+        mockTotalCount,
+      ]);
+
+      // Act
+      const result = await service.findAll(mockArgs);
+
+      // Assert
+      expect(saleRepository.findAndCount).toHaveBeenCalled();
+      expect(result.items).toEqual(mockSalesList);
+      expect(result.totalCount).toBe(mockTotalCount);
+    });
+
+    it('deve aplicar o operador MoreThanOrEqual quando apenas a data inicial(startDate) for enviada', async () => {
+      // Arrange
+      const mockDate = new Date('2026-06-01T00:00:00.000z');
+      const mockArgs = { startDate: mockDate };
+
+      saleRepository.findAndCount.mockResolvedValue([[], 0]);
+
+      // Act
+      await service.findAll(mockArgs);
+
+      // Assert
+      expect(saleRepository.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: MoreThanOrEqual(mockDate),
+          }),
+        }),
+      );
+    });
+
+    it('deve aplicar o operador LessThanOrEqual quando apenas a data final(endDate) for enviada', async () => {
+      // Arrange
+      const mockDate = new Date('2026-06-01T00:00:00.000z');
+      const mockArgs = { endDate: mockDate };
+
+      saleRepository.findAndCount.mockResolvedValue([[], 0]);
+
+      // Act
+      await service.findAll(mockArgs);
+
+      // Assert
+      expect(saleRepository.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: LessThanOrEqual(mockDate),
+          }),
+        }),
+      );
     });
   });
 
