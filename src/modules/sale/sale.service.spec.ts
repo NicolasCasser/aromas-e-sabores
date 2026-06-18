@@ -217,7 +217,6 @@ describe('SaleService', () => {
         Sale,
         expect.objectContaining({
           where: { id: 'sale-1' },
-          lock: { mode: 'pessimistic_write' },
         }),
       );
 
@@ -270,7 +269,6 @@ describe('SaleService', () => {
         Sale,
         expect.objectContaining({
           where: { id: 'sale-1' },
-          lock: { mode: 'pessimistic_write' },
         }),
       );
     });
@@ -321,7 +319,6 @@ describe('SaleService', () => {
         Sale,
         expect.objectContaining({
           where: { id: 'sale-1' },
-          lock: { mode: 'pessimistic_write' },
         }),
       );
     });

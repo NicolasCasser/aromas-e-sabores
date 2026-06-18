@@ -45,7 +45,6 @@ export class SaleService {
       const sale = await manager.findOne(Sale, {
         where: { id },
         relations: ['saleItens'],
-        lock: { mode: 'pessimistic_write' },
       });
 
       if (!sale) {
@@ -83,7 +82,6 @@ export class SaleService {
     return await this.repository.manager.transaction(async (manager) => {
       const sale = await manager.findOne(Sale, {
         where: { id: saleId },
-        lock: { mode: 'pessimistic_write' },
       });
 
       if (!sale) {
@@ -106,7 +104,6 @@ export class SaleService {
 
         product = await manager.getRepository(Product).findOne({
           where: { barcode: productCode },
-          lock: { mode: 'pessimistic_read' },
         });
 
         if (product) {
@@ -114,13 +111,11 @@ export class SaleService {
         } else {
           product = await manager.getRepository(Product).findOne({
             where: { barcode: scannedBarcode },
-            lock: { mode: 'pessimistic_read' },
           });
         }
       } else {
         product = await manager.getRepository(Product).findOne({
           where: { barcode: scannedBarcode },
-          lock: { mode: 'pessimistic_read' },
         });
       }
 
@@ -176,7 +171,6 @@ export class SaleService {
       const sale = await manager.findOne(Sale, {
         where: { id: saleId },
         relations: ['saleItens'],
-        lock: { mode: 'pessimistic_write' },
       });
 
       if (!sale) {
