@@ -3,7 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import {
+  Between,
+  FindOptionsWhere,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Sale } from './entities/sale.entity';
 import { SaleItem } from './entities/sale-item.entity';
@@ -13,6 +19,7 @@ import { TransactionType } from '../stock-transaction/enum/transaction-type.enum
 import { UnitType } from '../product/enum/unit-type.enum';
 import { Product } from '../product/entities/product.entity';
 import { PaymentMethod } from './enum/payment-methods.enum';
+import { FindAllSalesArgs } from './dto/find-all-sales.args';
 
 @Injectable()
 export class SaleService {
@@ -33,11 +40,55 @@ export class SaleService {
     return await this.repository.save(newSale);
   }
 
-  async findAll(): Promise<Sale[]> {
-    return await this.repository.find({
-      relations: ['saleItens'],
+  async findAll(
+    args: FindAllSalesArgs,
+  ): Promise<{ items: Sale[]; totalCount: number }> {
+    // Desestruturação dos argumentos e definição de valores padrão para paginação
+    const {
+      skip = 0,
+      take = 20,
+      startDate,
+      endDate,
+      status,
+      paymentMethod,
+    } = args;
+
+    // Cria um objeto where que começa vazio
+    // O TypeORM só vai filtrar o que for colocado dentro do objeto
+    const where: FindOptionsWhere<Sale> = {};
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (paymentMethod) {
+      where.paymentMethod = paymentMethod;
+    }
+
+    // Lógica de filtro por período
+    if (startDate && endDate) {
+      // Retorna todas as vendas realizadas entre as datas
+      where.createdAt = Between(startDate, endDate);
+    } else if (startDate) {
+      // Retorna as vendas realizadas a partir da data de ínicio
+      where.createdAt = MoreThanOrEqual(startDate);
+    } else if (endDate) {
+      // Retorna as venda realizadas até a data de fim
+      where.createdAt = LessThanOrEqual(endDate);
+    }
+
+    // Executa o findAndCount passando o where dinâmico
+    const [items, totalCount] = await this.repository.findAndCount({
+      where: where,
+      skip: skip,
+      take: take,
       order: { createdAt: 'DESC' },
     });
+
+    return {
+      items,
+      totalCount,
+    };
   }
 
   async cancel(id: string): Promise<Sale> {

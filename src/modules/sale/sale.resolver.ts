@@ -5,6 +5,8 @@ import { SaleDTO } from './dto/sale.dto';
 import { AddSaleItemByBarcodeInput } from './dto/add-sale-item-by-barcode.input';
 import { SaleItemDTO } from './dto/sale-item.dto';
 import { CompleteSaleInput } from './dto/complete-sale.input';
+import { PaginatedSalesDTO } from './dto/paginated-sales.dto';
+import { FindAllSalesArgs } from './dto/find-all-sales.args';
 
 @Resolver(() => Sale)
 export class SaleResolver {
@@ -32,8 +34,10 @@ export class SaleResolver {
     return this.saleService.cancel(id);
   }
 
-  @Query(() => [SaleDTO])
-  async findAllSales(): Promise<SaleDTO[]> {
-    return await this.saleService.findAll();
+  @Query(() => PaginatedSalesDTO)
+  async findAllSales(
+    @Args() args: FindAllSalesArgs,
+  ): Promise<PaginatedSalesDTO> {
+    return await this.saleService.findAll(args);
   }
 }
